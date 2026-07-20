@@ -1,6 +1,6 @@
 # Unwind
 
-A calm, all-in-one study space — notes, focus timer, and (coming soon)
+A calm, all in one study space — notes, focus timer, and (coming soon)
 quizzes and book recommendations, all in one place instead of five
 different apps.
 
