@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Unwind{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        // Applied before paint to avoid a flash of the wrong theme.
+        if (localStorage.getItem('unwind-theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a href="{{ url_for('dashboard') }}" class="brand">{% import "icons.html" as ic %}{{ ic.icon('sparkle', 18) }} unwind.</a>
+
+        <nav class="side-nav">
+            <a href="{{ url_for('dashboard') }}" class="{{ 'active' if active_page == 'home' else '' }}">{{ ic.icon('home') }} Home</a>
+            <a href="{{ url_for('notes_list') }}" class="{{ 'active' if active_page == 'notes' else '' }}">{{ ic.icon('notes') }} Notes</a>
+            <a href="{{ url_for('timer_page') }}" class="{{ 'active' if active_page == 'timer' else '' }}">{{ ic.icon('clock') }} Timer</a>
+            <span class="nav-soon">{{ ic.icon('quiz') }} Quizzes</span>
+            <span class="nav-soon">{{ ic.icon('flashcards') }} Flashcards</span>
+            <span class="nav-soon">{{ ic.icon('folder') }} Study Sets</span>
+            <span class="nav-soon">{{ ic.icon('calendar') }} Calendar</span>
+            <span class="nav-soon">{{ ic.icon('chart') }} Progress</span>
+            <span class="nav-soon">{{ ic.icon('bookmark') }} Bookmarks</span>
+        </nav>
+
+        <div class="promo-card">
+            <svg class="promo-illustration" viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 55 L30 25 L50 45 L75 15 L120 55 Z" fill="var(--purple-soft)"/>
+                <circle cx="85" cy="20" r="10" fill="var(--peach)"/>
+            </svg>
+            <p class="promo-title">Focus. Learn. Unwind.</p>
+            <p class="promo-sub">A calm space to learn, reflect, and grow.</p>
+            {% if today_goal_pct is defined %}
+            <div class="promo-progress"><div class="promo-progress-fill" style="width: {{ today_goal_pct }}%"></div></div>
+            <p class="promo-sub small">{{ today_goal_pct }}% of today's focus goal</p>
+            {% endif %}
+        </div>
+
+        <div class="side-bottom">
+            <a href="{{ url_for('settings_page') }}">{{ ic.icon('settings') }} Settings</a>
+        </div>
+    </aside>
+
+    <div class="main-area">
+        <header class="topbar">
+            <form method="get" action="{{ url_for('notes_list') }}" class="topbar-search">
+                {{ ic.icon('search', 18) }}
+                <input type="text" name="q" placeholder="Search your notes...">
+            </form>
+            <div class="topbar-right">
+                <button type="button" class="icon-btn" id="themeToggle" title="Toggle dark mode">{{ ic.icon('moon', 18) }}</button>
+                <a href="{{ url_for('settings_page') }}" class="user-chip">{{ ic.icon('sparkle', 14) }} Hi, {{ display_name }}</a>
+            </div>
+        </header>
+
+        <main class="container">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-stack">
+                    {% for message in messages %}
+                        <div class="flash">{{ message }}</div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script>
+document.getElementById('themeToggle').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('unwind-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+});
+</script>
+</body>
+</html>

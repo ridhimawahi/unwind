@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Unwind — {{ 'Edit note' if note else 'New note' }}{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{{ 'Edit note' if note else 'New note' }}</h1>
+
+<form method="post" class="note-form card">
+    <input type="text" name="title" placeholder="Title" value="{{ note.title if note else '' }}" required>
+    <textarea name="content" placeholder="Write your note..." rows="14">{{ note.content if note else '' }}</textarea>
+    <input type="text" name="tags" placeholder="tags, comma, separated" value="{{ note.tags if note else '' }}">
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save</button>
+        <a href="{{ url_for('notes_view', note_id=note.id) if note else url_for('notes_list') }}" class="btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

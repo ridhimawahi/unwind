@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% import "icons.html" as ic %}
+{% block title %}Unwind — Timer{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Study Timer</h1>
+
+<div class="timer-card">
+    <div class="timer-display" id="timerDisplay">00:00:00</div>
+    <input type="text" id="subjectInput" placeholder="What are you studying?" class="subject-input">
+    <div class="timer-controls">
+        <button id="startBtn" class="btn-primary">{{ ic.icon('clock', 16) }} Start</button>
+        <button id="pauseBtn" class="btn-secondary" disabled>Pause</button>
+        <button id="stopBtn" class="btn-danger" disabled>Stop & Log</button>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-box">
+        <span class="stat-num">{{ stats.today_seconds | duration }}</span>
+        <span class="stat-label">today</span>
+    </div>
+    <div class="stat-box">
+        <span class="stat-num">{{ stats.streak }}</span>
+        <span class="stat-label">day streak</span>
+    </div>
+</div>
+
+{% if stats.by_subject %}
+<div class="card">
+    <h2>Time by subject</h2>
+    <ul class="rich-list">
+        {% for s in stats.by_subject %}
+        <li>
+            <span class="tag-chip tag-{{ tag_color(s.subject) }}">{{ s.subject }}</span>
+            <span>{{ s.total | duration }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if recent %}
+<div class="card">
+    <h2>Recent sessions</h2>
+    <ul class="rich-list">
+        {% for r in recent %}
+        <li>
+            <span>
+                <span class="rich-list-title">{{ r.subject }}</span>
+                <span class="rich-list-sub">{{ r.started_at[:16] }}</span>
+            </span>
+            <span class="tag-chip tag-blue">{{ r.duration_seconds | duration }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form id="logForm" method="post" action="{{ url_for('timer_log') }}" style="display:none">
+    <input type="hidden" name="subject" id="logSubject">
+    <input type="hidden" name="duration_seconds" id="logDuration">
+    <input type="hidden" name="started_at" id="logStartedAt">
+</form>
+
+<script>
+let seconds = 0;
+let intervalId = null;
+let startedAt = null;
+
+const display = document.getElementById('timerDisplay');
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const stopBtn = document.getElementById('stopBtn');
+const subjectInput = document.getElementById('subjectInput');
+
+function formatTime(s) {
+    const h = String(Math.floor(s / 3600)).padStart(2, '0');
+    const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    return `${h}:${m}:${sec}`;
+}
+
+function tick() {
+    seconds += 1;
+    display.textContent = formatTime(seconds);
+}
+
+startBtn.addEventListener('click', () => {
+    if (!startedAt) startedAt = new Date().toISOString();
+    intervalId = setInterval(tick, 1000);
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+    stopBtn.disabled = false;
+    subjectInput.disabled = true;
+});
+
+pauseBtn.addEventListener('click', () => {
+    clearInterval(intervalId);
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+});
+
+stopBtn.addEventListener('click', () => {
+    clearInterval(intervalId);
+    document.getElementById('logSubject').value = subjectInput.value.trim() || 'General';
+    document.getElementById('logDuration').value = seconds;
+    document.getElementById('logStartedAt').value = startedAt || new Date().toISOString();
+    document.getElementById('logForm').submit();
+});
+</script>
+{% endblock %}

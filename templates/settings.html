@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Unwind — Settings{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Settings</h1>
+
+<div class="card settings-card">
+    <h2>Your name</h2>
+    <p class="muted-text">Used for the greeting on your dashboard.</p>
+    <form method="post" class="settings-form">
+        <input type="text" name="display_name" placeholder="Your name" value="{{ current_name }}">
+        <button type="submit" class="btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}

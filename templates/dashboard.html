@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% import "icons.html" as ic %}
+{% block title %}Unwind — Home{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="dash-main">
+        <div class="hero-card">
+            <div class="hero-text">
+                <h1 class="hero-greeting">{{ greeting }}, {{ display_name }} {{ ic.icon('sparkle', 20) }}</h1>
+                <p class="hero-sub">Take a deep breath, you've got this.</p>
+            </div>
+            <svg class="hero-illustration" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 80 Q50 60 100 75 T200 70 L200 100 L0 100 Z" fill="var(--purple-soft)"/>
+                <circle cx="150" cy="45" r="22" fill="var(--peach)" opacity="0.8"/>
+                <path d="M0 90 Q60 70 120 85 T200 82" stroke="var(--purple-light)" stroke-width="2" fill="none" opacity="0.6"/>
+            </svg>
+        </div>
+
+        <div class="quick-actions">
+            <a href="{{ url_for('notes_new') }}" class="action-tile tile-purple">
+                {{ ic.icon('pencil', 22) }}
+                <span class="action-title">Take Notes</span>
+                <span class="action-sub">Capture your thoughts</span>
+                {{ ic.icon('chevron', 16) }}
+            </a>
+            <a href="{{ url_for('timer_page') }}" class="action-tile tile-peach">
+                {{ ic.icon('clock', 22) }}
+                <span class="action-title">Study Timer</span>
+                <span class="action-sub">Focus, then track it</span>
+                {{ ic.icon('chevron', 16) }}
+            </a>
+            <a href="{{ url_for('notes_list') }}" class="action-tile tile-mint">
+                {{ ic.icon('notes', 22) }}
+                <span class="action-title">Browse Notes</span>
+                <span class="action-sub">{{ note_count }} saved so far</span>
+                {{ ic.icon('chevron', 16) }}
+            </a>
+            <span class="action-tile tile-gold disabled">
+                {{ ic.icon('quiz', 22) }}
+                <span class="action-title">Generate Quiz</span>
+                <span class="action-sub">Coming soon</span>
+            </span>
+        </div>
+
+        <div class="two-col">
+            <div class="card">
+                <div class="card-header"><h2>Recent Notes</h2><a href="{{ url_for('notes_list') }}" class="view-all">View all</a></div>
+                {% if notes %}
+                    <ul class="rich-list">
+                        {% for n in notes %}
+                        <li>
+                            <a href="{{ url_for('notes_view', note_id=n.id) }}">
+                                <span class="rich-list-title">{{ n.title }}</span>
+                                <span class="rich-list-sub">Edited {{ n.updated_at[:16] }}</span>
+                            </a>
+                            {% if n.tags %}
+                            {% set first_tag = n.tags.split(',')[0].strip() %}
+                            <span class="tag-chip tag-{{ tag_color(first_tag) }}">{{ first_tag }}</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty">No notes yet. <a href="{{ url_for('notes_new') }}">Write your first one</a>.</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h2>Recent Study Sessions</h2><a href="{{ url_for('timer_page') }}" class="view-all">View all</a></div>
+                {% if recent %}
+                    <ul class="rich-list">
+                        {% for r in recent %}
+                        <li>
+                            <span>
+                                <span class="rich-list-title">{{ r.subject }}</span>
+                                <span class="rich-list-sub">{{ r.started_at[:16] }}</span>
+                            </span>
+                            <span class="tag-chip tag-blue">{{ r.duration_seconds | duration }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty">No sessions yet. <a href="{{ url_for('timer_page') }}">Start the timer</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bottom-row">
+            <div class="hub-card">
+                <svg class="hub-illustration" viewBox="0 0 140 90" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="35" width="60" height="45" rx="4" fill="var(--purple-light)"/>
+                    <rect x="30" y="28" width="60" height="45" rx="4" fill="var(--purple)"/>
+                    <line x1="60" y1="28" x2="60" y2="73" stroke="white" stroke-width="1.5" opacity="0.5"/>
+                </svg>
+                <p class="hub-title">Your Study Hub</p>
+                <p class="hub-sub">Everything you need, all in one place.</p>
+            </div>
+            <div class="stat-tile tile-purple">
+                {{ ic.icon('notes', 20) }}
+                <span class="stat-num">{{ note_count }}</span>
+                <span class="stat-label">Notes Created</span>
+            </div>
+            <div class="stat-tile tile-peach">
+                {{ ic.icon('flame', 20) }}
+                <span class="stat-num">{{ stats.streak }}</span>
+                <span class="stat-label">Day Streak</span>
+            </div>
+            <div class="stat-tile tile-mint">
+                {{ ic.icon('clock', 20) }}
+                <span class="stat-num">{{ stats.total_seconds | duration }}</span>
+                <span class="stat-label">Total Focus Time</span>
+            </div>
+            <div class="stat-tile tile-gold">
+                {{ ic.icon('chart', 20) }}
+                <span class="stat-num">{{ sessions_this_week }}</span>
+                <span class="stat-label">Sessions This Week</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-side">
+        <div class="card streak-card">
+            {{ ic.icon('flame', 22) }}
+            <h2>Study Streak</h2>
+            <div class="streak-num">{{ stats.streak }} <span>days</span></div>
+            <p class="muted-text">{{ 'Keep it going!' if stats.streak > 0 else 'Start today!' }}</p>
+            <div class="week-strip">
+                {% for d in week %}
+                <div class="week-day">
+                    <span class="week-label">{{ d.label }}</span>
+                    <span class="week-dot {{ 'active' if d.active else '' }} {{ 'today' if d.is_today else '' }}">
+                        {% if d.active %}{{ ic.icon('check', 12) }}{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card quote-card">
+            <p class="quote-mark">&ldquo;</p>
+            <p class="quote-text">The mind is not a vessel to be filled, but a fire to be kindled.</p>
+            <p class="quote-author">— Plutarch</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

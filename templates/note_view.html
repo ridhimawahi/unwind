@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "icons.html" as ic %}
+{% block title %}Unwind — {{ note.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ note.title }}</h1>
+    <div class="note-actions">
+        <a href="{{ url_for('notes_edit', note_id=note.id) }}" class="btn-secondary">{{ ic.icon('pencil', 15) }} Edit</a>
+        <form method="post" action="{{ url_for('notes_delete', note_id=note.id) }}" class="inline-form-delete">
+            <button type="submit" class="btn-danger" onclick="return confirm('Delete this note?')">{{ ic.icon('trash', 15) }} Delete</button>
+        </form>
+    </div>
+</div>
+
+{% if note.tags %}
+<div class="note-card-tags">
+    {% for t in note.tags.split(',') %}<span class="tag-chip tag-{{ tag_color(t.strip()) }}">{{ t.strip() }}</span>{% endfor %}
+</div>
+{% endif %}
+
+<div class="note-content">{{ note.content }}</div>
+
+<a href="{{ url_for('notes_list') }}" class="back-link">← Back to notes</a>
+{% endblock %}

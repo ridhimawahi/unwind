@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import "icons.html" as ic %}
+{% block title %}Unwind — Notes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Notes</h1>
+    <a href="{{ url_for('notes_new') }}" class="btn-primary">{{ ic.icon('pencil', 16) }} New note</a>
+</div>
+
+<form method="get" class="search-form">
+    {{ ic.icon('search', 18) }}
+    <input type="text" name="q" value="{{ query }}" placeholder="Search notes...">
+    <button type="submit">Search</button>
+</form>
+
+{% if tags %}
+<div class="tag-row">
+    <a href="{{ url_for('notes_list') }}" class="{{ 'active' if not active_tag else '' }}">All</a>
+    {% for t in tags %}
+        <a href="{{ url_for('notes_list', tag=t) }}" class="{{ 'active' if active_tag == t else '' }}">{{ t }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if not notes %}
+    <p class="empty">
+        {% if query %}No notes match "{{ query }}".{% else %}No notes yet — <a href="{{ url_for('notes_new') }}">write one</a>.{% endif %}
+    </p>
+{% endif %}
+
+<div class="note-grid">
+    {% for n in notes %}
+    <a href="{{ url_for('notes_view', note_id=n.id) }}" class="note-card">
+        <div class="note-card-title">{{ n.title }}</div>
+        <div class="note-card-preview">{{ n.content[:100] }}{% if n.content|length > 100 %}…{% endif %}</div>
+        {% if n.tags %}
+        <div class="note-card-tags">
+            {% for t in n.tags.split(',') %}<span class="tag-chip tag-{{ tag_color(t.strip()) }}">{{ t.strip() }}</span>{% endfor %}
+        </div>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}
